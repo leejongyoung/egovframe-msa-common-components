@@ -1,0 +1,29 @@
+name: Check upstream PR head hygiene
+
+# The default branch owns the schedule, so it also checks PR heads created
+# from branches that never contained this workflow.
+on:
+    schedule:
+        - cron: "45 15 * * *"
+    workflow_dispatch:
+
+jobs:
+    check:
+        if: github.repository == 'leejongyoung/egovframe-msa-common-components'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Flag upstream PRs using a development branch as head
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  set -euo pipefail
+                  prs="$(gh pr list --repo eGovFramework/egovframe-msa-common-components \
+                    --author leejongyoung --state open --limit 1000 \
+                    --json number,headRefName,url)"
+                  bad="$(echo "$prs" | jq -r '.[] | select(.headRefName | startswith("upstream-submit/") | not) | "#\(.number) (head: \(.headRefName)) \(.url)"')"
+                  if [ -n "$bad" ]; then
+                    echo '::error::Open upstream PRs must use disposable upstream-submit/* heads.'
+                    echo "$bad"
+                    exit 1
+                  fi
+                  echo 'All open upstream PRs use disposable submission heads.'
