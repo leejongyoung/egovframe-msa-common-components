@@ -1,0 +1,33 @@
+name: Sync upstream main mirror
+
+on:
+    schedule:
+        - cron: "0 15 * * *"
+    workflow_dispatch:
+
+jobs:
+    sync:
+        if: github.repository == 'leejongyoung/egovframe-msa-common-components'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  ref: work
+                  fetch-depth: 0
+            - name: Fast-forward main from upstream
+              run: |
+                  set -euo pipefail
+                  git remote add upstream https://github.com/eGovFramework/egovframe-msa-common-components.git
+                  git fetch origin main
+                  git fetch upstream main
+                  if ! git merge-base --is-ancestor refs/remotes/origin/main refs/remotes/upstream/main; then
+                    echo '::error::Fork main diverged from upstream main; refusing to force-push.'
+                    exit 1
+                  fi
+                  if [ "$(git rev-parse refs/remotes/origin/main)" = "$(git rev-parse refs/remotes/upstream/main)" ]; then
+                    echo 'Fork main is already current.'
+                    exit 0
+                  fi
+                  git push origin refs/remotes/upstream/main:refs/heads/main

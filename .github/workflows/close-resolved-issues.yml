@@ -1,0 +1,25 @@
+name: Close resolved fork issues
+
+on:
+    schedule:
+        - cron: "30 15 * * *"
+    workflow_dispatch:
+
+jobs:
+    close:
+        if: github.repository == 'leejongyoung/egovframe-msa-common-components'
+        runs-on: ubuntu-latest
+        permissions:
+            issues: write
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  sparse-checkout: scripts/close_resolved_issues.py
+                  sparse-checkout-cone-mode: false
+                  persist-credentials: false
+            - name: Close completed issues after upstream merges
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_REPOSITORY: ${{ github.repository }}
+                  UPSTREAM_REPOSITORY: eGovFramework/egovframe-msa-common-components
+              run: python3 scripts/close_resolved_issues.py
