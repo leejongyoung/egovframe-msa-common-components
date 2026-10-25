@@ -10,6 +10,8 @@ import sys
 
 UPSTREAM = "eGovFramework/egovframe-msa-common-components"
 DENYLIST = [
+    ".specify",
+    ".omp",
     "AGENTS.md",
     ".github/workflows/fork-ci.yml",
     ".github/workflows/sync-upstream-main.yml",

@@ -3,3 +3,6 @@
 
 # 모든 텍스트 파일은 클론 시 CRLF로 자동 변환 (Windows 우선)
 * text eol=crlf
+
+# Fork-only Spec Kit shell scripts require LF on every platform.
+.specify/scripts/**/*.sh text eol=lf
