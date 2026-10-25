@@ -34,7 +34,7 @@ Application questionnaire validation, database schema, authentication, external 
 - Observed behavior: unmodified upstream POM fails a real Maven 3.10.0 package invocation on Temurin 17.0.21 with exactly the two reported uniqueness errors; see assessment reproduction.
 - Public report: issue #12 describes earlier Maven warning versus new Maven error; independent local 3.9.x compatibility/build checks are planned, not assumed.
 - Public maintainer decisions: https://github.com/eGovFramework/egovframe-msa-common-components/pull/28#issuecomment-5113060740 and https://github.com/eGovFramework/egovframe-msa-common-components/pull/62#issuecomment-5579764670 and https://github.com/eGovFramework/egovframe-msa-common-components/pull/66#issuecomment-5630751446 reject broader ConfigServer version-management cleanup; they do not establish approval of this fix.
-- Observed deduplication: all upstream PRs (95 returned, below the 100 limit) and all fork PRs inspected; no matching duplicate-declaration fix or open upstream PR found.
+- Observed deduplication: all upstream PRs (94 returned, below the 100 limit) and all fork PRs inspected; no matching duplicate-declaration fix or open upstream PR found.
 
 ## Open questions and next evidence
 Upstream acceptance remains a maintainer decision. Verify both Maven package commands and actual resolved versions before review; external artifact repositories may limit full build validation. Fork CI matrix and upstream submission remain separate review gates; neither is claimed complete here.
