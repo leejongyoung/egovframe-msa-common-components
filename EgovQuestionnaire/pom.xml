@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>egovframework</groupId>
     <artifactId>EgovQuestionnaire</artifactId>
-    <version>5.0.3</version>
+    <version>5.0.4</version>
     <name>EgovQuestionnaire</name>
     <url>https://www.egovframe.go.kr</url>
 
@@ -148,17 +148,6 @@
         <dependency>
             <groupId>org.egovframe.boot</groupId>
             <artifactId>egovframe-boot-starter-crypto</artifactId>
-        </dependency>
-        <!-- CVE-2024-47072: spring-cloud-starter-netflix-eureka-client에서 주입되는 configuration 1.1 취약점 보완용 직접 주입 -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-configuration2</artifactId>
-            <version>${commons-configuration2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
