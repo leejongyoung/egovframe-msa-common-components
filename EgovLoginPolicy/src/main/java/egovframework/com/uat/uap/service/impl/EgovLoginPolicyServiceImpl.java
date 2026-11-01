@@ -169,11 +169,11 @@ public class EgovLoginPolicyServiceImpl extends EgovAbstractServiceImpl implemen
     private void assertLoginPolicyOwner(String employerId, Map<String, String> userInfo) {
         String userId = userInfo != null ? userInfo.get("userId") : null;
         if (ObjectUtils.isEmpty(userId)) {
-            throw new IllegalStateException("ÀÎÁõ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+            throw new IllegalStateException("ì¸ì¦ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
         }
-        // 2026.07.13 KISA º¸¾ÈÃë¾àÁ¡ Á¶Ä¡
+        // 2026.07.13 KISA ë³´ì•ˆì·¨ì•½ì  ì¡°ì¹˜
         if (!Objects.equals(userId, employerId)) {
-            throw new IllegalStateException("±ÇÇÑÀÌ ¾ø½À´Ï´Ù.");
+            throw new IllegalStateException("ê¶Œí•œì´ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 

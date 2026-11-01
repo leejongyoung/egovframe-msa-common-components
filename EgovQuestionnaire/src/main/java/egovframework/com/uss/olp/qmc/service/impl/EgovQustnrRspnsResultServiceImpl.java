@@ -19,7 +19,7 @@ import egovframework.com.uss.olp.qmc.service.QustnrRspnsResultESStatsDTO;
 import egovframework.com.uss.olp.qmc.service.QustnrRspnsResultMCStatsDTO;
 import lombok.RequiredArgsConstructor;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-@Repository("qmcEgovQustnrRspnsResultService")
+@Service("qmcEgovQustnrRspnsResultService")
 @RequiredArgsConstructor
 public class EgovQustnrRspnsResultServiceImpl extends EgovAbstractServiceImpl implements EgovQustnrRspnsResultService {
 
@@ -104,18 +104,18 @@ public class EgovQustnrRspnsResultServiceImpl extends EgovAbstractServiceImpl im
     private void assertQestnrOwner(String qustnrTmplatId, String qestnrId, Map<String, String> userInfo) {
         String uniqId = userInfo != null ? userInfo.get("uniqId") : null;
         if (ObjectUtils.isEmpty(uniqId)) {
-            throw new IllegalStateException("ÀÎÁõ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+            throw new IllegalStateException("ì¸ì¦ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
         }
         QestnrInfoId qestnrInfoId = new QestnrInfoId();
         qestnrInfoId.setQustnrTmplatId(qustnrTmplatId);
         qestnrInfoId.setQestnrId(qestnrId);
         QestnrInfo qestnrInfo = qestnrInfoRepository.findById(qestnrInfoId).orElse(null);
         if (qestnrInfo == null) {
-            throw new IllegalStateException("±ÇÇÑÀÌ ¾ø½À´Ï´Ù.");
+            throw new IllegalStateException("ê¶Œí•œì´ ì—†ìŠµë‹ˆë‹¤.");
         }
-        // 2026.07.13 KISA º¸¾ÈÃë¾àÁ¡ Á¶Ä¡
+        // 2026.07.13 KISA ë³´ì•ˆì·¨ì•½ì  ì¡°ì¹˜
         if (!Objects.equals(uniqId, qestnrInfo.getFrstRegisterId())) {
-            throw new IllegalStateException("±ÇÇÑÀÌ ¾ø½À´Ï´Ù.");
+            throw new IllegalStateException("ê¶Œí•œì´ ì—†ìŠµë‹ˆë‹¤.");
         }
     }
 
