@@ -42,3 +42,38 @@ jobs:
           cache: maven
       - name: Build module
         run: mvn -B -ntp -f ${{ matrix.module }}/pom.xml package -DskipTests
+      # 테스트 단계는 fork 전용이다. upstream build.yml 은 -DskipTests 만 실행한다.
+      # DB 조건은 docker-compose/mysql 과 같다(mysql:8.0.33, DB/계정 com, 비밀번호 com01,
+      # --lower_case_table_names=1, utf8mb4, docker-compose/mysql/init/*.sql 적용).
+      # CI 전용 컨테이너라 root 비밀번호는 실행마다 새로 만든 임의 값을 쓰고 외부에 노출하지 않는다.
+      - name: Start MySQL for tests
+        run: |
+          docker run -d --name ci-mysql \
+            -e MYSQL_ROOT_PASSWORD="$(openssl rand -hex 16)" \
+            -e MYSQL_USER=com -e MYSQL_PASSWORD=com01 -e MYSQL_DATABASE=com \
+            -e TZ=Asia/Seoul \
+            -p 127.0.0.1:3306:3306 \
+            -v "$GITHUB_WORKSPACE/docker-compose/mysql/init:/docker-entrypoint-initdb.d:ro" \
+            mysql:8.0.33 \
+            --character-set-server=utf8mb4 \
+            --collation-server=utf8mb4_unicode_ci \
+            --skip-character-set-client-handshake \
+            --lower_case_table_names=1
+      - name: Wait for MySQL init scripts
+        run: |
+          # init 스크립트 실행 중에는 임시 서버가 먼저 떴다 내려가므로,
+          # 최종 서버 기동 로그가 나온 뒤 com 계정으로 실제 스키마를 조회한다.
+          for i in $(seq 1 90); do
+            if docker logs ci-mysql 2>&1 | grep -q "ready for connections.*port: 3306" \
+              && docker exec ci-mysql mysql -ucom -pcom01 -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='com'" 2>/dev/null | grep -qv '^0$'; then
+              echo "MySQL ready"; exit 0
+            fi
+            sleep 2
+          done
+          docker logs ci-mysql | tail -50
+          exit 1
+      - name: Test module
+        run: mvn -B -ntp -f ${{ matrix.module }}/pom.xml test
+      - name: Dump MySQL log on failure
+        if: failure()
+        run: docker logs ci-mysql | tail -50
