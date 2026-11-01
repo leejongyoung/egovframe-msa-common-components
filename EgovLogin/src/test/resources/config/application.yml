@@ -1,0 +1,14 @@
+# 테스트 전용 설정. ConfigServer(localhost:8888) 없이 @SpringBootTest 컨텍스트를 올리기 위한 값이며
+# 운영·개발 환경과 무관하다. 여기 값은 테스트 실행에만 쓰이는 임의 값이다.
+token:
+  accessSecret: "aoqPr99Vd3rqHsVQste0ct25RoW5KyQ7KuEAX/I7kMw="
+  refreshSecret: "Syk2APsHt3OkegmwCGW2WlVtfgCTaM5rYtM/iSmCpZo="
+  accessExpiration: 7200000
+  refreshExpiration: 86400000
+
+org:
+  egovframe:
+    crypto:
+      algorithm: SHA-256
+      algorithmKey: egovframe
+      algorithmKeyHash: gdyYs/IZqY86VcWhT8emCYfqY1ahw2vtLG+/FzNqtrQ=
