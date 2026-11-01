@@ -19,6 +19,7 @@ DENYLIST = [
     ".github/workflows/close-resolved-issues.yml",
     "scripts/open_upstream_pr.py",
     "scripts/close_resolved_issues.py",
+    "scripts/check_source_encoding.py",
 ]
 
 
