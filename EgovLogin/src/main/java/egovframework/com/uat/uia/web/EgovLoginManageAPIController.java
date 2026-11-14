@@ -195,7 +195,7 @@ public class EgovLoginManageAPIController {
         if (!Boolean.parseBoolean(this.lock)) {
             return message;
         }
-        String clientIp = EgovClientIP.getClientIp();
+        String clientIp = EgovClientIP.getClientIp(request);
         LoginPolicyVO loginPolicyVO = new LoginPolicyVO();
         loginPolicyVO.setEmployerId(loginVO.getUserId());
         loginPolicyVO = service.loginPolicy(loginPolicyVO);
