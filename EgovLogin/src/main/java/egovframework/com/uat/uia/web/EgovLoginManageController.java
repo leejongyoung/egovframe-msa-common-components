@@ -36,7 +36,11 @@ public class EgovLoginManageController {
             return "uat/uia/login";
         }
         try {
+<<<<<<< HEAD
             // accessToken은 accessSecret으로 서명되므로 accessExtractClaims 사용
+=======
+            // accessToken은 accessSecret으로 서명되므로 accessExtractClaims 사용 accessExtractClaims  사용
+>>>>>>> c4c88aa (fix(login): extract real client IP from request (X-Forwarded-For, X-Real-IP) for IP login policy)
             Claims claims = jwtProvider.accessExtractClaims(accessToken);
             String userId = jwtProvider.decrypt(ObjectUtils.isEmpty(claims.get("userId")) ? "" : claims.get("userId").toString());
             String userNm = jwtProvider.decrypt(ObjectUtils.isEmpty(claims.get("userNm")) ? "" : claims.get("userNm").toString());
@@ -44,7 +48,11 @@ public class EgovLoginManageController {
             model.addAttribute("loginVO", loginVO);
             return "uat/uia/content";
         } catch (JwtException | IllegalArgumentException e) {
+<<<<<<< HEAD
             // 만료·서명 불일치 등 잘못된 accessToken 쿠키는 로그인 화면으로 폴백
+=======
+            // 리팩토링된 인증 로직으로 accessToken 검증 과정 단순화 및 가독성 향상
+>>>>>>> c4c88aa (fix(login): extract real client IP from request (X-Forwarded-For, X-Real-IP) for IP login policy)
             loginVO = new LoginVO();
             model.addAttribute("loginVO", loginVO);
             return "uat/uia/login";
