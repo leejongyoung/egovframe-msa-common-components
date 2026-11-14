@@ -4,8 +4,9 @@ services:
     container_name: egov-redis
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      # 로컬 개발 전용: 기본은 루프백만 게시. 원격 접속이 필요하면 REDIS_BIND_ADDRESS 를 명시적으로 변경한다.
+      - "${REDIS_BIND_ADDRESS:-127.0.0.1}:${REDIS_PORT:-6379}:6379"
     command:
       - redis-server
       - --requirepass
-      - "${REDIS_PASSWORD:-rhdxhd12}"
+      - "${REDIS_PASSWORD:?REDIS_PASSWORD 를 설정하세요 (.env.example 참고)}"
