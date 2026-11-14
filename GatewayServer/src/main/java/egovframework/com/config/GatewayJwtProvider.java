@@ -15,6 +15,9 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
+import org.springframework.context.annotation.Bean;
+import reactor.core.publisher.Mono;
 
 import javax.crypto.SecretKey;
 
@@ -145,6 +148,13 @@ public class GatewayJwtProvider {
 
     public String decrypt(String s) {
         return egovEnvCryptoService.decrypt(s);
+    }
+
+    @Bean
+    public KeyResolver ipKeyResolver() {
+        return exchange -> Mono.just(exchange.getRequest().getRemoteAddress() != null
+                ? exchange.getRequest().getRemoteAddress().getAddress().getHostAddress()
+                : "unknown");
     }
 
 }

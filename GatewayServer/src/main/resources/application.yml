@@ -51,6 +51,11 @@ spring:
                 - Path=/uat/uia/**
               filters:
                 - RewritePath=/uat/uia/(?<segment>.*), /uat/uia/${segment}
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 10
+                    redis-rate-limiter.burstCapacity: 20
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: EgovLoginPolicy
               uri: lb://EGOVLOGINPOLICY
@@ -59,6 +64,11 @@ spring:
               filters:
                 - RewritePath=/uat/uap/(?<segment>.*), /uat/uap/${segment}
                 - name: Auth
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 30
+                    redis-rate-limiter.burstCapacity: 50
+                    key-resolver: '#{@ipKeyResolver}'
 
             - id: EgovAuthorInfo
               uri: lb://EGOVAUTHOR
