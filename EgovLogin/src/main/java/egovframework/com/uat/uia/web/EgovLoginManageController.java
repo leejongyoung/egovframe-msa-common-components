@@ -36,7 +36,7 @@ public class EgovLoginManageController {
             return "uat/uia/login";
         }
         try {
-            // accessTokenÀº accessSecretÀ¸·Î ¼­¸íµÇ¹Ç·Î accessExtractClaims »ç¿ë
+            // accessTokenì€ accessSecretìœ¼ë¡œ ì„œëª…ë˜ë¯€ë¡œ accessExtractClaims ì‚¬ìš©
             Claims claims = jwtProvider.accessExtractClaims(accessToken);
             String userId = jwtProvider.decrypt(ObjectUtils.isEmpty(claims.get("userId")) ? "" : claims.get("userId").toString());
             String userNm = jwtProvider.decrypt(ObjectUtils.isEmpty(claims.get("userNm")) ? "" : claims.get("userNm").toString());
@@ -44,7 +44,7 @@ public class EgovLoginManageController {
             model.addAttribute("loginVO", loginVO);
             return "uat/uia/content";
         } catch (JwtException | IllegalArgumentException e) {
-            // ¸¸·á¡¤¼­¸í ºÒÀÏÄ¡ µî Àß¸øµÈ accessToken ÄíÅ°´Â ·Î±×ÀÎ È­¸éÀ¸·Î Æú¹é
+            // ë§Œë£ŒÂ·ì„œëª… ë¶ˆì¼ì¹˜ ë“± ì˜ëª»ëœ accessToken ì¿ í‚¤ëŠ” ë¡œê·¸ì¸ í™”ë©´ìœ¼ë¡œ í´ë°±
             loginVO = new LoginVO();
             model.addAttribute("loginVO", loginVO);
             return "uat/uia/login";

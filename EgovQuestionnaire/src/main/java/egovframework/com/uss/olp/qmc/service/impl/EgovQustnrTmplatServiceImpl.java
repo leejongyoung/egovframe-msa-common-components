@@ -31,15 +31,15 @@ public class EgovQustnrTmplatServiceImpl extends EgovAbstractServiceImpl impleme
                 .map(template -> {
                     String uniqId = userInfo != null ? userInfo.get("uniqId") : null;
                     if (ObjectUtils.isEmpty(uniqId)) {
-                        throw new IllegalStateException("ÀÎÁõ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+                        throw new IllegalStateException("ì¸ì¦ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
                     }
-                    // 2026.07.13 KISA º¸¾ÈÃë¾àÁ¡ Á¶Ä¡
+                    // 2026.07.13 KISA ë³´ì•ˆì·¨ì•½ì  ì¡°ì¹˜
                     if (!Objects.equals(uniqId, template.getFrstRegisterId())) {
-                        throw new IllegalStateException("±ÇÇÑÀÌ ¾ø½À´Ï´Ù.");
+                        throw new IllegalStateException("ê¶Œí•œì´ ì—†ìŠµë‹ˆë‹¤.");
                     }
                     return template.getQustnrTmplatImageInfo();
                 })
-                .orElseThrow(() -> new IllegalStateException("±ÇÇÑÀÌ ¾ø½À´Ï´Ù."));
+                .orElseThrow(() -> new IllegalStateException("ê¶Œí•œì´ ì—†ìŠµë‹ˆë‹¤."));
     }
 
 }

@@ -101,9 +101,9 @@ public class EgovAuthorInfoServiceImpl extends EgovAbstractServiceImpl implement
 
     private void requireAuthenticated(Map<String, String> userInfo) {
         if (userInfo == null || ObjectUtils.isEmpty(userInfo.get("uniqId"))) {
-            throw new IllegalStateException("ÀÎÁõ Á¤º¸°¡ ¾ø½À´Ï´Ù.");
+            throw new IllegalStateException("ì¸ì¦ ì •ë³´ê°€ ì—†ìŠµë‹ˆë‹¤.");
         }
-        // 2026.07.13 KISA º¸¾ÈÃë¾àÁ¡ Á¶Ä¡ - ±ÇÇÑ ¸¶½ºÅÍ µ¥ÀÌÅÍ´Â ÀÎÁõµÈ »ç¿ëÀÚ¸¸ Á¢±Ù
+        // 2026.07.13 KISA ë³´ì•ˆì·¨ì•½ì  ì¡°ì¹˜ - ê¶Œí•œ ë§ˆìŠ¤í„° ë°ì´í„°ëŠ” ì¸ì¦ëœ ì‚¬ìš©ìë§Œ ì ‘ê·¼
     }
 
 }
