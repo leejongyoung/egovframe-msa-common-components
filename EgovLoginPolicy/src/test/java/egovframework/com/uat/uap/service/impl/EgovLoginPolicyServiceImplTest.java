@@ -30,7 +30,6 @@ class EgovLoginPolicyServiceImplTest {
 		LoginPolicyVO loginPolicyVO = new LoginPolicyVO();
 
 		// `EMPLYR_ID` varchar(20) NOT NULL COMMENT '업무사용자ID',
-//		loginPolicyVO.setEmployerId("TEST1");
 		loginPolicyVO.setFirstIndex(0);
 		loginPolicyVO.setRecordCountPerPage(1);
 		Page<LoginPolicyDTO> list = egovLoginPolicyService.list(loginPolicyVO);
@@ -61,6 +60,7 @@ class EgovLoginPolicyServiceImplTest {
 		log.debug("getEmployerId={}, {}", result.getEmployerId(), loginPolicyVO.getEmployerId());
 
 		log.debug("getFrstRegisterId={}, {}", result.getFrstRegisterId(), loginPolicyVO.getFrstRegisterId());
+
 		log.debug("getFrstRegisterPnttm={}, {}", result.getFrstRegisterPnttm(), loginPolicyVO.getFrstRegisterPnttm());
 	}
 
