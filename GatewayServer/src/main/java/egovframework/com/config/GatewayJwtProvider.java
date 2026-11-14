@@ -38,13 +38,30 @@ public class GatewayJwtProvider {
     @Value("${token.refreshExpiration}")
     private String refreshExpiration;
 
-    @Value("${gateway.internalSecret:${token.accessSecret}}")
+    @Value("${gateway.internalSecret}")
     private String internalSecret;
 
     private final EgovEnvCryptoServiceImpl egovEnvCryptoService;
 
     public GatewayJwtProvider(@Qualifier("egovEnvCryptoService") EgovEnvCryptoServiceImpl egovEnvCryptoService) {
         this.egovEnvCryptoService = egovEnvCryptoService;
+    }
+
+    @jakarta.annotation.PostConstruct
+    public void validateSecrets() {
+        if (ObjectUtils.isEmpty(accessSecret) || ObjectUtils.isEmpty(refreshSecret) || ObjectUtils.isEmpty(internalSecret)) {
+            throw new IllegalStateException("JWT secrets must be configured: token.accessSecret, token.refreshSecret, gateway.internalSecret (all required, no defaults)");
+        }
+        if (accessSecret.equals(refreshSecret)) {
+            log.warn("token.accessSecret and token.refreshSecret are identical - strongly recommend using different keys");
+        }
+        if (accessSecret.equals(internalSecret)) {
+            log.warn("token.accessSecret and gateway.internalSecret are identical - key separation is required for security");
+        }
+        // Check minimum entropy (base64 256bit = 44 chars minimum)
+        if (accessSecret.length() < 44 || refreshSecret.length() < 44 || internalSecret.length() < 44) {
+            log.warn("JWT secrets should be at least 256 bits (44+ base64 chars) for security");
+        }
     }
 
     public SecretKey getSigningKey(String secret) {
