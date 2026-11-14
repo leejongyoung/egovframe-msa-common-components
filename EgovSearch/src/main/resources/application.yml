@@ -113,11 +113,11 @@ opensearch:
   protocol: https
   url: localhost
   port: 9200
-  username: admin
-  password: yourStrongPassword123!
+  username: ${opensearch.username:admin}
+  password: ${opensearch.password:yourStrongPassword123!}
   keystore:
     path:
-    password: changeit
+    password: ${opensearch.keystore.password:changeit}
   text:
     indexname: text-bbs-index
   vector:
