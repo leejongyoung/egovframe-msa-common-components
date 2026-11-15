@@ -76,6 +76,8 @@
  
 ## 프로젝트 구동 방법
 0. docker-compose/mysql 실행 `docker-compose up -d`
+   - 먼저 `docker-compose/mysql/.env.example`을 `.env`로 복사해 `MYSQL_ROOT_PASSWORD`를 설정한다(미설정 시 compose 실패). 포트는 기본 `127.0.0.1`로만 게시되며 로컬 개발 전용이다. Redis(`docker-compose/redis`)도 `REDIS_PASSWORD`가 필수이고, EgovLogin은 같은 `REDIS_PASSWORD` 환경변수를 읽는다(미설정 시 기존 기본값).
+   - 운영 환경에 그대로 사용하지 않는다. 기존 MySQL 데이터 볼륨의 비밀번호는 환경변수 변경만으로 갱신되지 않으므로 SQL로 별도 변경한다. Compose `.env`는 Java 프로세스에 자동 전달되지 않으므로 EgovLogin 실행 환경에도 동일한 `REDIS_PASSWORD`를 설정한다.
 1. EurekaServer 실행
 2. ConfigServer
    - `ConfigServer/src/main/resources/config/application-local.yml`

@@ -23,7 +23,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: rhdxhd12
+      password: ${REDIS_PASSWORD:rhdxhd12}
 
 logging:
   level:

@@ -14,6 +14,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.egovframe.rte.fdl.cmmn.EgovAbstractServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -31,15 +33,15 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
     private final EgovGeneralMemberRepository genRepository; // 일반회원
     private final EgovEnterpriseMemberRepository entRepository; // 기업회원
     private final EgovEmployMemberRepository empRepository; // 업무사용자
-	private final EgovLoginPolicyRepository loginPolicyRepository; // 로그인정책관리
+    private final EgovLoginPolicyRepository loginPolicyRepository; // 로그인정책관리
     private final JPAQueryFactory queryFactory;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public LoginDTO actionLogin(LoginVO loginVO) {
         String userId = loginVO.getUserId();
         String userSe = loginVO.getUserSe();
-        String encPassword = encryptPassword(loginVO.getUserPw(), loginVO.getUserId());
-        // encPassword(암호화된 비밀번호)는 로그로 남기지 않는다 (CWE-532).
+        
         log.debug("userId = {}, userSe = {}", userId, userSe);
 
         QGnrlMber gnrlMber = QGnrlMber.gnrlMber;
@@ -59,7 +61,6 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
                         .innerJoin(emplyrscrtyestbs)
                         .on(gnrlMber.esntlId.eq(emplyrscrtyestbs.scrtyDtrmnTrgetId))
                         .where(gnrlMber.mberId.eq(userId)
-                                .and(gnrlMber.password.eq(encPassword))
                                 .and(gnrlMber.mberStus.eq("P")))
                         .fetchOne();
                 if (tuple == null) {
@@ -68,6 +69,11 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
                 GnrlMber gm = tuple.get(gnrlMber);
                 es = tuple.get(emplyrscrtyestbs);
                 authorCode = es != null && es.getAuthorCode() != null ? es.getAuthorCode() : "";
+
+                // 비밀번호 검증 (BCrypt 또는 레거시 SHA-256 -> BCrypt 마이그레이션)
+                if (!verifyAndUpgradePassword(loginVO.getUserPw(), gm.getPassword(), userId, userSe)) {
+                    return null;
+                }
 
                 return new LoginDTO(
                         Objects.requireNonNull(gm).getMberId(),
@@ -88,7 +94,6 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
                         .innerJoin(emplyrscrtyestbs)
                         .on(entrprsMber.esntlId.eq(emplyrscrtyestbs.scrtyDtrmnTrgetId))
                         .where(entrprsMber.entrprsMberId.eq(loginVO.getUserId())
-                                .and(entrprsMber.entrprsMberPassword.eq(encPassword))
                                 .and(entrprsMber.entrprsMberStus.eq("P")))
                         .fetchOne();
                 if (tuple == null) {
@@ -97,6 +102,11 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
                 EntrprsMber em = tuple.get(entrprsMber);
                 es = tuple.get(emplyrscrtyestbs);
                 authorCode = es != null && es.getAuthorCode() != null ? es.getAuthorCode() : "";
+
+                if (!verifyAndUpgradePassword(loginVO.getUserPw(), em.getEntrprsMberPassword(), userId, userSe)) {
+                    return null;
+                }
+
                 return new LoginDTO(
                         Objects.requireNonNull(em).getEntrprsMberId(),
                         em.getCmpnyNm(),
@@ -116,7 +126,6 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
                         .innerJoin(emplyrscrtyestbs)
                         .on(emplyrInfo.esntlId.eq(emplyrscrtyestbs.scrtyDtrmnTrgetId))
                         .where(emplyrInfo.emplyrId.eq(loginVO.getUserId())
-                                .and(emplyrInfo.password.eq(encPassword))
                                 .and(emplyrInfo.emplyrStusCode.eq("P")))
                         .fetchOne();
                 if (tuple == null) {
@@ -125,6 +134,11 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
                 EmplyrInfo ei = tuple.get(emplyrInfo);
                 es = tuple.get(emplyrscrtyestbs);
                 authorCode = es != null && es.getAuthorCode() != null ? es.getAuthorCode() : "";
+
+                if (!verifyAndUpgradePassword(loginVO.getUserPw(), ei.getPassword(), userId, userSe)) {
+                    return null;
+                }
+
                 return new LoginDTO(
                         Objects.requireNonNull(ei).getEmplyrId(),
                         ei.getUserNm(),
@@ -202,7 +216,6 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
         String processCode = "C";
         String userId = loginVO.getUserId();
         String userSe = loginVO.getUserSe();
-        String encPassword = encryptPassword(loginVO.getUserPw(), loginVO.getUserId());
         String lockAt = getLockAt(loginIncorrectVO.getLockAt());
         int lockCnt = getLockCnt(loginIncorrectVO.getLockCnt());
         int lockConfigCnt = Integer.parseInt(lockCount);
@@ -211,8 +224,8 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
             return processCode;
         }
 
-        // 비밀번호가 맞는 경우
-        if (loginIncorrectVO.getUserPw().equals(encPassword)) {
+        // 비밀번호가 맞는 경우 (BCrypt 또는 레거시 SHA-256 -> BCrypt 마이그레이션)
+        if (verifyAndUpgradePassword(loginVO.getUserPw(), loginIncorrectVO.getUserPw(), userId, userSe)) {
             saveLoginIncorrect(userId, userSe, "E", lockCnt);
             return "E";
         }
@@ -281,7 +294,32 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
         }
     }
 
-    private String encryptPassword(String key, String salt) {
+    /**
+     * 비밀번호 검증 및 해시 업그레이드 (SHA-256 -> BCrypt 마이그레이션).
+     * 저장된 해시가 BCrypt($2a$/$2b$/$2y$로 시작)면 BCrypt로 검증,
+     * 아니면 기존 SHA-256(userId salt)로 검증 후 성공 시 BCrypt로 재해시 저장.
+     */
+    private boolean verifyAndUpgradePassword(String rawPassword, String storedHash, String userId, String userSe) {
+        // 이미 BCrypt인 경우
+        if (storedHash != null && (storedHash.startsWith("$2a$") || storedHash.startsWith("$2b$") || storedHash.startsWith("$2y$"))) {
+            return passwordEncoder.matches(rawPassword, storedHash);
+        }
+        // 레거시 SHA-256 검증
+        String legacyHash = encryptPasswordLegacy(rawPassword, userId);
+        if (legacyHash.equals(storedHash)) {
+            // 마이그레이션: BCrypt로 재해시하여 저장
+            String newHash = passwordEncoder.encode(rawPassword);
+            updatePasswordHash(userId, userSe, newHash);
+            log.info("Password upgraded to BCrypt for userId={}, userSe={}", userId, userSe);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 레거시 SHA-256 해시 계산 (userId를 salt로 사용).
+     */
+    private String encryptPasswordLegacy(String key, String salt) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.reset();
@@ -290,6 +328,32 @@ public class EgovLoginManageServiceImpl extends EgovAbstractServiceImpl implemen
         } catch (NoSuchAlgorithmException e) {
             log.debug("##### EgovLoginManageServiceImpl NoSuchAlgorithmException >>> {}", e.getMessage());
             return "0";
+        }
+    }
+
+    /**
+     * 사용자 유형에 따라 비밀번호 해시 업데이트.
+     */
+    private void updatePasswordHash(String userId, String userSe, String newHash) {
+        switch (userSe) {
+            case "GNR":
+                genRepository.findById(userId).ifPresent(m -> {
+                    m.setPassword(newHash);
+                    genRepository.save(m);
+                });
+                break;
+            case "ENT":
+                entRepository.findById(userId).ifPresent(m -> {
+                    m.setEntrprsMberPassword(newHash);
+                    entRepository.save(m);
+                });
+                break;
+            case "USR":
+                empRepository.findById(userId).ifPresent(m -> {
+                    m.setPassword(newHash);
+                    empRepository.save(m);
+                });
+                break;
         }
     }
 

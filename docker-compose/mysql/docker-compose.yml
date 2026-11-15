@@ -4,9 +4,8 @@ services:
     environment:  # 환경변수
       MYSQL_USER: com
       MYSQL_DATABASE: com
-      MYSQL_PASSWORD: com01
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_ROOT_HOST: "%"
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-com01}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD 를 설정하세요 (.env.example 참고)}
       TZ: Asia/Seoul
     command:
       - --character-set-server=utf8mb4
@@ -18,5 +17,6 @@ services:
       - "./init/:/docker-entrypoint-initdb.d/"
     platform: linux/x86_64 #m1에서 플랫폼을 명시해주지 않으면 에러남
     ports:
-      - "3306:3306"
+      # 로컬 개발 전용: 기본은 루프백만 게시. 원격 접속이 필요하면 MYSQL_BIND_ADDRESS 를 명시적으로 변경한다.
+      - "${MYSQL_BIND_ADDRESS:-127.0.0.1}:3306:3306"
     container_name: mysql
