@@ -16,9 +16,20 @@ contributions to `eGovFramework/egovframe-msa-common-components`.
   those branches; inspect their roles before creating any extra tracks.
 
 Upstream's existing workflows target `main`. The separate fork CI targets
-`work` PRs and pushes and runs: Maven package with tests skipped for the 11 modules in upstream CI (JDK 17).
-Use that result as the baseline check. For changes outside its tested scope,
+`work` PRs and pushes and runs, for the 11 modules in upstream CI (JDK 17): Maven package
+with tests skipped, then `mvn test` against a MySQL 8.0.33 container prepared like
+`docker-compose/mysql` (DB/account `com`, `docker-compose/mysql/init/*.sql`). The test step is
+fork-only; upstream `build.yml` stays `-DskipTests`. Use that result as the baseline check. For changes outside its tested scope,
 add a targeted verification and record the exact command/result in the PR.
+
+## Syncing upstream `main` into `work`
+
+`sync-upstream-main.yml` only fast-forwards the fork's `main`; it never touches `work`.
+When upstream `main` advances, open a fork PR from a topic branch that merges `origin/main`
+into `work` (`git merge --no-ff origin/main`) and wait for fork CI before merging.
+Upstream v5.0.4 deleted the `EgovMobileId` module (vendor-provided source excluded from
+contributions). `work` no longer contains it; do not restore it, and do not add it to the CI
+matrices.
 
 ## Upstream submissions
 
