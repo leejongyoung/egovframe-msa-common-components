@@ -76,10 +76,10 @@ class EgovLoginManageServiceLogTest {
         String userId = "tester";
         String userPw = "S3cr3t!Passw0rd";
         // the exact value the production code computes and would log
-        String encPassword = ReflectionTestUtils.invokeMethod(service, "encryptPassword", userPw, userId);
+        String encPassword = ReflectionTestUtils.invokeMethod(service, "encryptPasswordLegacy", userPw, userId);
 
         assertThat(encPassword)
-                .as("precondition: encryptPassword should produce a non-trivial hash")
+                .as("precondition: encryptPasswordLegacy should produce a non-trivial hash")
                 .isNotBlank()
                 .hasSizeGreaterThan(10);
 
